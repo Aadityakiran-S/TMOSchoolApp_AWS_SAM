@@ -9,33 +9,282 @@ Description: >
 Globals:
   Function:
     Timeout: 3
+    MemorySize: 128
+    Runtime: nodejs16.x
+    Architectures:
+        - x86_64
+    Environment:
+      Variables:
+        TODO_TABLE: !Ref Table
+        REGION_NAME: !Ref Region
+Parameters:
+  Table:
+    Type: String
+    Default: SchoolDB
+  Region:
+    Type: String
+    Default: us-west-2
 
 Resources:
-  HelloWorldFunction:
+  CreateStudentFunction:
     Type: AWS::Serverless::Function 
     Properties:
-      CodeUri: hello-world/
-      Handler: app.lambdaHandler
-      Runtime: nodejs14.x
-      Architectures:
-        - x86_64
+      CodeUri: handler/
+      Handler: crud-student.createStudent
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
       Events:
-        HelloWorld:
+        CreateStudent:
           Type: Api 
           Properties:
-            Path: /hello
+            Path: /student
+            Method: get #change to POST later
+
+  GetStudentFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-student.getStudent
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /student/{id}
+            Method: get 
+
+  UpdateStudentFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-student.updateStudent
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /student/{id}
+            Method: get #change to PUT later
+
+  DeleteStudentFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-student.deleteStudent
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /student/{id}
+            Method: get #change to DELETE later
+
+  CreateTeacherFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-teacher.createTeacher
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /teacher
+            Method: get #change to POST later
+
+  GetTeacherFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-teacher.getTeacher
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /teacher/{id}
+            Method: get 
+  
+  UpdateTeacherFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-teacher.updateTeacher
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /teacher/{id}
+            Method: get #change to PUT later
+
+  DeleteTeacherFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-teacher.deleteTeacher
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /teacher/{id}
+            Method: get #change to DELETE later
+
+  CreateClassFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-class.createClass
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /class
+            Method: get #change to POST later
+
+  GetClassFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-class.getClass
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /class/{id}
+            Method: get 
+  
+  UpdateClassFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-class.updateClass
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /class/{id}
+            Method: get #change to PUT later
+
+  DeleteClassFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: crud-class.deleteClass
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /class/{id}
+            Method: get #change to DELETE later
+
+  EnrollStudentToClassFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: other-access-patterns.enrollStudentToClass
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /student/{id}
+            Method: get #change to UPDATE? later
+
+  AssignTeacherToClassFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: other-access-patterns.assignTeacherToClass
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /teacher/{id}
+            Method: get #change to UPDATE? later
+
+  ListAllStudentsInClassFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: other-access-patterns.listAllStudentsInClass
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /class/{id}
+            Method: get 
+
+  ListAllClassByTeacherFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: other-access-patterns.listAllClassByTeacher
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /teacher/{id}
             Method: get
+
+  SchoolDBTable: #Haven't provided appropriate schema yet
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        #BillingMode: PAY_PER_REQUEST
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: !Ref Table
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+  TMOSchoolApi:
+    Description: "API Gateway endpoint URL for Prod stage for TMO school assignment application"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn

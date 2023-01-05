@@ -8,37 +8,313 @@ Description: 'tmo-assignment-school-app
 Globals:
   Function:
     Timeout: 3
+    MemorySize: 128
+    Runtime: nodejs16.x
+    Architectures:
+    - x86_64
+    Environment:
+      Variables:
+        TODO_TABLE:
+          Ref: Table
+        REGION_NAME:
+          Ref: Region
+Parameters:
+  Table:
+    Type: String
+    Default: SchoolDB
+  Region:
+    Type: String
+    Default: us-west-2
 Resources:
-  HelloWorldFunction:
+  CreateStudentFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: HelloWorldFunction
-      Handler: app.lambdaHandler
-      Runtime: nodejs14.x
-      Architectures:
-      - x86_64
+      CodeUri: CreateStudentFunction
+      Handler: crud-student.createStudent
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
       Events:
-        HelloWorld:
+        CreateStudent:
           Type: Api
           Properties:
-            Path: /hello
+            Path: /student
             Method: get
     Metadata:
-      SamResourceId: HelloWorldFunction
+      SamResourceId: CreateStudentFunction
+  GetStudentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: GetStudentFunction
+      Handler: crud-student.getStudent
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /student/{id}
+            Method: get
+    Metadata:
+      SamResourceId: GetStudentFunction
+  UpdateStudentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: UpdateStudentFunction
+      Handler: crud-student.updateStudent
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /student/{id}
+            Method: get
+    Metadata:
+      SamResourceId: UpdateStudentFunction
+  DeleteStudentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: DeleteStudentFunction
+      Handler: crud-student.deleteStudent
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /student/{id}
+            Method: get
+    Metadata:
+      SamResourceId: DeleteStudentFunction
+  CreateTeacherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: CreateTeacherFunction
+      Handler: crud-teacher.createTeacher
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /teacher
+            Method: get
+    Metadata:
+      SamResourceId: CreateTeacherFunction
+  GetTeacherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: GetTeacherFunction
+      Handler: crud-teacher.getTeacher
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /teacher/{id}
+            Method: get
+    Metadata:
+      SamResourceId: GetTeacherFunction
+  UpdateTeacherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: UpdateTeacherFunction
+      Handler: crud-teacher.updateTeacher
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /teacher/{id}
+            Method: get
+    Metadata:
+      SamResourceId: UpdateTeacherFunction
+  DeleteTeacherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: DeleteTeacherFunction
+      Handler: crud-teacher.deleteTeacher
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /teacher/{id}
+            Method: get
+    Metadata:
+      SamResourceId: DeleteTeacherFunction
+  CreateClassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: CreateClassFunction
+      Handler: crud-class.createClass
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /class
+            Method: get
+    Metadata:
+      SamResourceId: CreateClassFunction
+  GetClassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: GetClassFunction
+      Handler: crud-class.getClass
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /class/{id}
+            Method: get
+    Metadata:
+      SamResourceId: GetClassFunction
+  UpdateClassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: UpdateClassFunction
+      Handler: crud-class.updateClass
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /class/{id}
+            Method: get
+    Metadata:
+      SamResourceId: UpdateClassFunction
+  DeleteClassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: DeleteClassFunction
+      Handler: crud-class.deleteClass
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /class/{id}
+            Method: get
+    Metadata:
+      SamResourceId: DeleteClassFunction
+  EnrollStudentToClassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: EnrollStudentToClassFunction
+      Handler: other-access-patterns.enrollStudentToClass
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /student/{id}
+            Method: get
+    Metadata:
+      SamResourceId: EnrollStudentToClassFunction
+  AssignTeacherToClassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: AssignTeacherToClassFunction
+      Handler: other-access-patterns.assignTeacherToClass
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /teacher/{id}
+            Method: get
+    Metadata:
+      SamResourceId: AssignTeacherToClassFunction
+  ListAllStudentsInClassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ListAllStudentsInClassFunction
+      Handler: other-access-patterns.listAllStudentsInClass
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /class/{id}
+            Method: get
+    Metadata:
+      SamResourceId: ListAllStudentsInClassFunction
+  ListAllClassByTeacherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ListAllClassByTeacherFunction
+      Handler: other-access-patterns.listAllClassByTeacher
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /teacher/{id}
+            Method: get
+    Metadata:
+      SamResourceId: ListAllClassByTeacherFunction
+  SchoolDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      TableName:
+        Ref: Table
 Outputs:
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
+  TMOSchoolApi:
+    Description: API Gateway endpoint URL for Prod stage for TMO school assignment
+      application
     Value:
       Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
-    Value:
-      Fn::GetAtt:
-      - HelloWorldFunction
-      - Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
-    Value:
-      Fn::GetAtt:
-      - HelloWorldFunctionRole
-      - Arn
