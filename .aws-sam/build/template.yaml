@@ -14,7 +14,7 @@ Globals:
     - x86_64
     Environment:
       Variables:
-        TODO_TABLE:
+        SCHOOL_TABLE:
           Ref: Table
         REGION_NAME:
           Ref: Region
@@ -26,6 +26,23 @@ Parameters:
     Type: String
     Default: us-west-2
 Resources:
+  ListAllEntriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ListAllEntriesFunction
+      Handler: other-access-patterns.listAllEntries
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /other
+            Method: get
+    Metadata:
+      SamResourceId: ListAllEntriesFunction
   CreateStudentFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -40,7 +57,7 @@ Resources:
           Type: Api
           Properties:
             Path: /student
-            Method: get
+            Method: post
     Metadata:
       SamResourceId: CreateStudentFunction
   GetStudentFunction:
@@ -74,7 +91,7 @@ Resources:
           Type: Api
           Properties:
             Path: /student/{id}
-            Method: get
+            Method: put
     Metadata:
       SamResourceId: UpdateStudentFunction
   DeleteStudentFunction:
@@ -91,7 +108,7 @@ Resources:
           Type: Api
           Properties:
             Path: /student/{id}
-            Method: get
+            Method: delete
     Metadata:
       SamResourceId: DeleteStudentFunction
   CreateTeacherFunction:
@@ -108,7 +125,7 @@ Resources:
           Type: Api
           Properties:
             Path: /teacher
-            Method: get
+            Method: post
     Metadata:
       SamResourceId: CreateTeacherFunction
   GetTeacherFunction:
@@ -142,7 +159,7 @@ Resources:
           Type: Api
           Properties:
             Path: /teacher/{id}
-            Method: get
+            Method: put
     Metadata:
       SamResourceId: UpdateTeacherFunction
   DeleteTeacherFunction:
@@ -159,7 +176,7 @@ Resources:
           Type: Api
           Properties:
             Path: /teacher/{id}
-            Method: get
+            Method: delete
     Metadata:
       SamResourceId: DeleteTeacherFunction
   CreateClassFunction:
@@ -176,7 +193,7 @@ Resources:
           Type: Api
           Properties:
             Path: /class
-            Method: get
+            Method: post
     Metadata:
       SamResourceId: CreateClassFunction
   GetClassFunction:
@@ -210,7 +227,7 @@ Resources:
           Type: Api
           Properties:
             Path: /class/{id}
-            Method: get
+            Method: put
     Metadata:
       SamResourceId: UpdateClassFunction
   DeleteClassFunction:
@@ -227,7 +244,7 @@ Resources:
           Type: Api
           Properties:
             Path: /class/{id}
-            Method: get
+            Method: delete
     Metadata:
       SamResourceId: DeleteClassFunction
   EnrollStudentToClassFunction:
@@ -243,7 +260,7 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /student/{id}
+            Path: /student/assign/{id}
             Method: get
     Metadata:
       SamResourceId: EnrollStudentToClassFunction
@@ -260,7 +277,7 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /teacher/{id}
+            Path: /teacher/assign/{id}
             Method: get
     Metadata:
       SamResourceId: AssignTeacherToClassFunction
@@ -277,7 +294,7 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /class/{id}
+            Path: /student/list/{id}
             Method: get
     Metadata:
       SamResourceId: ListAllStudentsInClassFunction
@@ -294,7 +311,7 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /teacher/{id}
+            Path: /teacher/list/{id}
             Method: get
     Metadata:
       SamResourceId: ListAllClassByTeacherFunction

@@ -1,78 +1,144 @@
 const AWS = require("aws-sdk");
 
-const TODO_TABLE = process.env.TODO_TABLE;
+const SCHOOL_TABLE = process.env.SCHOOL_TABLE;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
-const {"v4": uuidv4} = require('uuid');
-let response;
+const uuid = require('uuid');
 
 exports.createClass = async (event, context) => {
+    const timestamp = new Date().getTime();
+    const data = JSON.parse(event.body);
+
+    let body = {}; let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
+
+    const params = {
+        TableName: SCHOOL_TABLE,
+        Item: {
+            id: uuid.v1(),
+            name: data.name,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+        },
+    };
+
     try {
-        // const ret = await axios(url);
-        response = {
-            'statusCode': 200,
-            'body': JSON.stringify({
-                message: 'hello world',
-                // location: ret.data.trim()
-            })
-        }
+        body = await dynamoDb.put((params)).promise();
+        body.message = `Successfully created item with namne ${data.name}`;
     } catch (err) {
+        statusCode = 400;
+        body = err.message;
         console.log(err);
-        return err;
+    } finally {
+        body = JSON.stringify(body);
     }
 
-    return response
+    return {
+        statusCode,
+        body,
+        headers
+    };
 };
 
 exports.getClass = async (event, context) => {
+    let body = {}; let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
+
+    const params = {
+        TableName: SCHOOL_TABLE,
+        Key: {
+            id: event.pathParameters.id,
+        },
+    };
+
     try {
-        // const ret = await axios(url);
-        response = {
-            'statusCode': 200,
-            'body': JSON.stringify({
-                message: 'hello world',
-                // location: ret.data.trim()
-            })
-        }
+        body = await dynamoDb.get(params).promise();
     } catch (err) {
+        statusCode = 400;
+        body = err.message;
         console.log(err);
-        return err;
+    } finally {
+        body = JSON.stringify(body);
     }
 
-    return response
+    return {
+        statusCode,
+        body,
+        headers,
+    };
 };
 
 exports.updateClass = async (event, context) => {
+    const datetime = new Date().toISOString();
+    const data = JSON.parse(event.body);
+    let body = {}; let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
+
+    const params = {
+        TableName: SCHOOL_TABLE,
+        Key: {
+            id: event.pathParameters.id,
+        },
+        ExpressionAttributeValues: {
+            ":name": data.name,
+            ":updatedAt": datetime,
+        },
+        UpdateExpression:
+            "set name = :name, updatedAt = :updatedAt",
+        // ReturnValues: "ALL_NEW",
+    };
+
+
     try {
-        // const ret = await axios(url);
-        response = {
-            'statusCode': 200,
-            'body': JSON.stringify({
-                message: 'hello world',
-                // location: ret.data.trim()
-            })
-        }
-    } catch (err) {
-        console.log(err);
-        return err;
+        body = await dynamoDb.update(params).promise();
+        body.message = `Successfully updated item with ID ${event.pathParameters.id}`;
+    } catch (error) {
+        statusCode = 400;
+        body = error.message;
+        console.log(error);
+    } finally { 
+        body = JSON.stringify(body.Attributes);
     }
 
-    return response
+    return {
+        statusCode,
+        body,
+        headers,
+    };
 };
 
 exports.deleteClass = async (event, context) => {
+    let body = {}; let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
+
+    const params = {
+        TableName: SCHOOL_TABLE,
+        Key: {
+            id: event.pathParameters.id,
+        },
+    };
+
     try {
-        // const ret = await axios(url);
-        response = {
-            'statusCode': 200,
-            'body': JSON.stringify({
-                message: 'hello world',
-                // location: ret.data.trim()
-            })
-        }
+        body = await dynamoDb.delete(params).promise();
+        body.message = `Successfully deleted item with ID ${event.pathParameters.id}`;
     } catch (err) {
+        statusCode = 400;
+        body = err.message;
         console.log(err);
-        return err;
+    } finally {
+        body = JSON.stringify(body);
     }
 
-    return response
+    return {
+        statusCode,
+        body,
+        headers,
+    };
 };

@@ -8,3 +8,4 @@ s3_prefix = "tmo-assignment-school-app"
 region = "us-west-2"
 capabilities = "CAPABILITY_IAM"
 image_repositories = []
+parameter_overrides = "Table=\"SchoolDB\" Region=\"us-west-2\""

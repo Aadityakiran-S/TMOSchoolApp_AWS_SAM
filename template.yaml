@@ -15,7 +15,7 @@ Globals:
         - x86_64
     Environment:
       Variables:
-        TODO_TABLE: !Ref Table
+        SCHOOL_TABLE: !Ref Table
         REGION_NAME: !Ref Region
 Parameters:
   Table:
@@ -26,6 +26,21 @@ Parameters:
     Default: us-west-2
 
 Resources:
+  ListAllEntriesFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: handler/
+      Handler: other-access-patterns.listAllEntries
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable      
+      Events:
+        CreateStudent:
+          Type: Api 
+          Properties:
+            Path: /other
+            Method: get
+
   CreateStudentFunction:
     Type: AWS::Serverless::Function 
     Properties:
@@ -39,7 +54,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /student
-            Method: get #change to POST later
+            Method: post 
 
   GetStudentFunction:
     Type: AWS::Serverless::Function 
@@ -69,7 +84,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /student/{id}
-            Method: get #change to PUT later
+            Method: put
 
   DeleteStudentFunction:
     Type: AWS::Serverless::Function 
@@ -84,7 +99,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /student/{id}
-            Method: get #change to DELETE later
+            Method: delete
 
   CreateTeacherFunction:
     Type: AWS::Serverless::Function 
@@ -99,7 +114,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /teacher
-            Method: get #change to POST later
+            Method: post
 
   GetTeacherFunction:
     Type: AWS::Serverless::Function 
@@ -129,7 +144,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /teacher/{id}
-            Method: get #change to PUT later
+            Method: put
 
   DeleteTeacherFunction:
     Type: AWS::Serverless::Function 
@@ -144,7 +159,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /teacher/{id}
-            Method: get #change to DELETE later
+            Method: delete
 
   CreateClassFunction:
     Type: AWS::Serverless::Function 
@@ -159,7 +174,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /class
-            Method: get #change to POST later
+            Method: post
 
   GetClassFunction:
     Type: AWS::Serverless::Function 
@@ -189,7 +204,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /class/{id}
-            Method: get #change to PUT later
+            Method: put
 
   DeleteClassFunction:
     Type: AWS::Serverless::Function 
@@ -204,7 +219,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /class/{id}
-            Method: get #change to DELETE later
+            Method: delete
 
   EnrollStudentToClassFunction:
     Type: AWS::Serverless::Function 
@@ -218,7 +233,7 @@ Resources:
         CreateStudent:
           Type: Api 
           Properties:
-            Path: /student/{id}
+            Path: /student/assign/{id}
             Method: get #change to UPDATE? later
 
   AssignTeacherToClassFunction:
@@ -233,7 +248,7 @@ Resources:
         CreateStudent:
           Type: Api 
           Properties:
-            Path: /teacher/{id}
+            Path: /teacher/assign/{id}
             Method: get #change to UPDATE? later
 
   ListAllStudentsInClassFunction:
@@ -248,7 +263,7 @@ Resources:
         CreateStudent:
           Type: Api 
           Properties:
-            Path: /class/{id}
+            Path: /student/list/{id}
             Method: get 
 
   ListAllClassByTeacherFunction:
@@ -263,7 +278,7 @@ Resources:
         CreateStudent:
           Type: Api 
           Properties:
-            Path: /teacher/{id}
+            Path: /teacher/list/{id}
             Method: get
 
   SchoolDBTable: #Haven't provided appropriate schema yet
