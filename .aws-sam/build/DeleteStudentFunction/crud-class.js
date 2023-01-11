@@ -17,7 +17,7 @@ exports.createClass = async (event, context) => {
         TableName: SCHOOL_TABLE,
         Item: {
             id: uuid.v1(),
-            name: data.name,
+            entryName: data.name,
             createdAt: timestamp,
             updatedAt: timestamp,
         },
@@ -89,8 +89,8 @@ exports.updateClass = async (event, context) => {
             ":updatedAt": datetime,
         },
         UpdateExpression:
-            "set name = :name, updatedAt = :updatedAt",
-        // ReturnValues: "ALL_NEW",
+            "set entryName = :name, updatedAt = :updatedAt",
+        ReturnValues: "ALL_NEW",
     };
 
 
@@ -102,7 +102,7 @@ exports.updateClass = async (event, context) => {
         body = error.message;
         console.log(error);
     } finally { 
-        body = JSON.stringify(body.Attributes);
+        body = JSON.stringify(body);
     }
 
     return {
