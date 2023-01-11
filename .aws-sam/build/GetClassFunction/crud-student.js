@@ -5,23 +5,27 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const { "v4": uuid } = require('uuid');
 
 exports.createStudent = async (event, context) => {
+    const timestamp = new Date().getTime();
     const data = JSON.parse(event.body);
-    console.log(data);
-    data["message"] = "Successfully done whatever";
 
-    //Passing ID if passed to function
-    try{
-        data.id = event.pathParameters.id;
-    }
-    catch(err){
-        console.log(err);
-    }
+    let body = {}; let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
 
-    let body;
-    let statusCode = 200;
+    const params = {
+        TableName: SCHOOL_TABLE,
+        Item: {
+            id: uuid.v1(),
+            entryName: data.name,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+        },
+    };
 
     try {
-        body = data;
+        body = await dynamoDb.put((params)).promise();
+        body.message = `Successfully created item with namne ${data.name}`;
     } catch (err) {
         statusCode = 400;
         body = err.message;
@@ -30,32 +34,28 @@ exports.createStudent = async (event, context) => {
         body = JSON.stringify(body);
     }
 
-    const output = {
+    return {
         statusCode,
         body,
-    }
-
-    return output;
+        headers
+    };
 };
 
 exports.getStudent = async (event, context) => {
-    const data = JSON.parse(event.body);
-    console.log(data);
-    data["message"] = "Successfully done whatever";
+    let body = {}; let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
 
-    //Passing ID if passed to function
-    try{
-        data.id = event.pathParameters.id;
-    }
-    catch(err){
-        console.log(err);
-    }
-
-    let body;
-    let statusCode = 200;
+    const params = {
+        TableName: SCHOOL_TABLE,
+        Key: {
+            id: event.pathParameters.id,
+        },
+    };
 
     try {
-        body = data;
+        body = await dynamoDb.get(params).promise();
     } catch (err) {
         statusCode = 400;
         body = err.message;
@@ -64,66 +64,70 @@ exports.getStudent = async (event, context) => {
         body = JSON.stringify(body);
     }
 
-    const output = {
+    return {
         statusCode,
         body,
-    }
-
-    return output;
+        headers,
+    };
 };
 
 exports.updateStudent = async (event, context) => {
+    const datetime = new Date().toISOString();
     const data = JSON.parse(event.body);
-    console.log(data);
-    data["message"] = "Successfully done whatever";
+    let body = {}; let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
 
-    //Passing ID if passed to function
-    try{
-        data.id = event.pathParameters.id;
-    }
-    catch(err){
-        console.log(err);
-    }
+    const params = {
+        TableName: SCHOOL_TABLE,
+        Key: {
+            id: event.pathParameters.id,
+        },
+        ExpressionAttributeValues: {
+            ":name": data.name,
+            ":updatedAt": datetime,
+        },
+        UpdateExpression:
+            "set entryName = :name, updatedAt = :updatedAt",
+        ReturnValues: "ALL_NEW",
+    };
 
-    let body;
-    let statusCode = 200;
 
     try {
-        body = data;
-    } catch (err) {
+        body = await dynamoDb.update(params).promise();
+        body.message = `Successfully updated item with ID ${event.pathParameters.id}`;
+    } catch (error) {
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
+        body = error.message;
+        console.log(error);
+    } finally { 
         body = JSON.stringify(body);
     }
 
-    const output = {
+    return {
         statusCode,
         body,
-    }
-
-    return output;
+        headers,
+    };
 };
 
 exports.deleteStudent = async (event, context) => {
-    const data = JSON.parse(event.body);
-    console.log(data);
-    data["message"] = "Successfully done whatever";
+    let body = {}; let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
 
-    //Passing ID if passed to function
-    try{
-        data.id = event.pathParameters.id;
-    }
-    catch(err){
-        console.log(err);
-    }
-
-    let body;
-    let statusCode = 200;
+    const params = {
+        TableName: SCHOOL_TABLE,
+        Key: {
+            id: event.pathParameters.id,
+        },
+    };
 
     try {
-        body = data;
+        body = await dynamoDb.delete(params).promise();
+        body.message = `Successfully deleted item with ID ${event.pathParameters.id}`;
     } catch (err) {
         statusCode = 400;
         body = err.message;
@@ -132,10 +136,9 @@ exports.deleteStudent = async (event, context) => {
         body = JSON.stringify(body);
     }
 
-    const output = {
+    return {
         statusCode,
         body,
-    }
-
-    return output;
+        headers,
+    };
 };

@@ -59,6 +59,7 @@ exports.getClass = async (event, context) => {
     } catch (err) {
         statusCode = 400;
         body = err.message;
+        body.message = "Oops, Something went wrong!"
         console.log(err);
     } finally {
         body = JSON.stringify(body);
