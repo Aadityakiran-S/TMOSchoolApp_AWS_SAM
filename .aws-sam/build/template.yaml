@@ -77,6 +77,23 @@ Resources:
             Method: get
     Metadata:
       SamResourceId: GetStudentFunction
+  ListStudentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ListStudentsFunction
+      Handler: crud-student.listStudents
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /student
+            Method: get
+    Metadata:
+      SamResourceId: ListStudentsFunction
   UpdateStudentFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -145,6 +162,23 @@ Resources:
             Method: get
     Metadata:
       SamResourceId: GetTeacherFunction
+  ListTeachersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ListTeachersFunction
+      Handler: crud-teacher.listTeachers
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /teacher
+            Method: get
+    Metadata:
+      SamResourceId: ListTeachersFunction
   UpdateTeacherFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -213,6 +247,23 @@ Resources:
             Method: get
     Metadata:
       SamResourceId: GetClassFunction
+  ListClassessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ListClassessFunction
+      Handler: crud-class.listClasses
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /class
+            Method: get
+    Metadata:
+      SamResourceId: ListClassessFunction
   UpdateClassFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -260,10 +311,27 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /student/assign/{id}
-            Method: get
+            Path: /student/enroll/
+            Method: post
     Metadata:
       SamResourceId: EnrollStudentToClassFunction
+  RemoveStudentFromClassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: RemoveStudentFromClassFunction
+      Handler: other-access-patterns.removeStudentFromClass
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /student/remove/
+            Method: delete
+    Metadata:
+      SamResourceId: RemoveStudentFromClassFunction
   AssignTeacherToClassFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -277,10 +345,27 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /teacher/assign/{id}
-            Method: get
+            Path: /teacher/assign/
+            Method: post
     Metadata:
       SamResourceId: AssignTeacherToClassFunction
+  RemoveTeacherFromClass:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: RemoveTeacherFromClass
+      Handler: other-access-patterns.removeTeacherFromClass
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /teacher/remove/
+            Method: delete
+    Metadata:
+      SamResourceId: RemoveTeacherFromClass
   ListAllStudentsInClassFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -318,17 +403,38 @@ Resources:
   SchoolDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
+      TableName:
+        Ref: Table
       AttributeDefinitions:
+      - AttributeName: identifier
+        AttributeType: S
       - AttributeName: id
         AttributeType: S
       KeySchema:
-      - AttributeName: id
+      - AttributeName: identifier
         KeyType: HASH
+      - AttributeName: id
+        KeyType: RANGE
+      GlobalSecondaryIndexes:
+      - IndexName: student_id_to_class_id_gsi
+        KeySchema:
+        - AttributeName: student_id_gsi
+          KeyType: HASH
+        - AttributeName: identifier
+          KeyType: RANGE
+        Projection:
+          ProjectionType: ALL
+      - IndexName: class_id_to_teacher_id_gsi
+        KeySchema:
+        - AttributeName: class_id_gsi
+          KeyType: HASH
+        - AttributeName: identifier
+          KeyType: RANGE
+        Projection:
+          ProjectionType: ALL
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
-      TableName:
-        Ref: Table
 Outputs:
   TMOSchoolApi:
     Description: API Gateway endpoint URL for Prod stage for TMO school assignment

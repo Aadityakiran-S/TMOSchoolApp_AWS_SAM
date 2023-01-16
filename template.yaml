@@ -1,10 +1,10 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   tmo-assignment-school-app
 
   Sample SAM Template for tmo-assignment-school-app
-  
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -12,7 +12,7 @@ Globals:
     MemorySize: 128
     Runtime: nodejs16.x
     Architectures:
-        - x86_64
+      - x86_64
     Environment:
       Variables:
         SCHOOL_TABLE: !Ref Table
@@ -27,275 +27,374 @@ Parameters:
 
 Resources:
   ListAllEntriesFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: other-access-patterns.listAllEntries
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /other
             Method: get
 
   CreateStudentFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-student.createStudent
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /student
-            Method: post 
+            Method: post
 
   GetStudentFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-student.getStudent
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /student/{id}
-            Method: get 
+            Method: get
+
+  ListStudentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: crud-student.listStudents
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /student
+            Method: get
 
   UpdateStudentFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-student.updateStudent
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /student/{id}
             Method: put
 
   DeleteStudentFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-student.deleteStudent
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /student/{id}
             Method: delete
 
   CreateTeacherFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-teacher.createTeacher
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /teacher
             Method: post
 
   GetTeacherFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-teacher.getTeacher
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /teacher/{id}
-            Method: get 
+            Method: get
   
+  ListTeachersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: crud-teacher.listTeachers
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /teacher
+            Method: get
+
   UpdateTeacherFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-teacher.updateTeacher
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /teacher/{id}
             Method: put
 
   DeleteTeacherFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-teacher.deleteTeacher
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /teacher/{id}
             Method: delete
 
   CreateClassFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-class.createClass
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /class
             Method: post
 
   GetClassFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-class.getClass
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /class/{id}
-            Method: get 
-  
+            Method: get
+
+  ListClassessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: crud-class.listClasses
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /class
+            Method: get
+
   UpdateClassFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-class.updateClass
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /class/{id}
             Method: put
 
   DeleteClassFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: crud-class.deleteClass
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SchoolDBTable      
+            TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /class/{id}
             Method: delete
 
+  #Pass both IDs
   EnrollStudentToClassFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: other-access-patterns.enrollStudentToClass
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
-            Path: /student/assign/{id}
-            Method: get #change to UPDATE? later
+            Path: /student/enroll/
+            Method: post
 
+  #Pass both IDs
+  RemoveStudentFromClassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: other-access-patterns.removeStudentFromClass
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /student/remove/
+            Method: delete
+
+  #Pass both IDs
   AssignTeacherToClassFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: other-access-patterns.assignTeacherToClass
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
-            Path: /teacher/assign/{id}
-            Method: get #change to UPDATE? later
+            Path: /teacher/assign/
+            Method: post
+  
+  #Pass both IDs
+  RemoveTeacherFromClass:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: other-access-patterns.removeTeacherFromClass
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchoolDBTable
+      Events:
+        CreateStudent:
+          Type: Api
+          Properties:
+            Path: /teacher/remove/
+            Method: delete
 
   ListAllStudentsInClassFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: other-access-patterns.listAllStudentsInClass
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /student/list/{id}
-            Method: get 
+            Method: get
 
   ListAllClassByTeacherFunction:
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
       Handler: other-access-patterns.listAllClassByTeacher
-      Policies: 
+      Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref SchoolDBTable
       Events:
         CreateStudent:
-          Type: Api 
+          Type: Api
           Properties:
             Path: /teacher/list/{id}
             Method: get
 
   SchoolDBTable: #Haven't provided appropriate schema yet
-      Type: AWS::DynamoDB::Table
-      Properties:
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-        #BillingMode: PAY_PER_REQUEST
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        TableName: !Ref Table
-
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref Table
+      AttributeDefinitions:
+        - AttributeName: identifier
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: identifier
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: student_id_to_class_id_gsi
+          KeySchema:
+            - AttributeName: student_id_gsi
+              KeyType: HASH
+            - AttributeName: identifier
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: class_id_to_teacher_id_gsi
+          KeySchema:
+            - AttributeName: class_id_gsi
+              KeyType: HASH
+            - AttributeName: identifier
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      # BillingMode: PAY_PER_REQUEST
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM

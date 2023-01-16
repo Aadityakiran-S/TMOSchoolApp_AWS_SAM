@@ -1,9 +1,9 @@
 const AWS = require("aws-sdk");
-
 const SCHOOL_TABLE = process.env.SCHOOL_TABLE;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const uuid = require('uuid');
 
+//DONE: Working
 exports.createClass = async (event, context) => {
     const timestamp = new Date().getTime();
     const data = JSON.parse(event.body);
@@ -16,7 +16,8 @@ exports.createClass = async (event, context) => {
     const params = {
         TableName: SCHOOL_TABLE,
         Item: {
-            id: uuid.v1(),
+            identifier: "#class",
+            id: `class::${uuid.v1()}`,
             entryName: data.name,
             createdAt: timestamp,
             updatedAt: timestamp,
@@ -25,7 +26,7 @@ exports.createClass = async (event, context) => {
 
     try {
         body = await dynamoDb.put((params)).promise();
-        body.message = `Successfully created item with namne ${data.name}`;
+        body.message = `Successfully created class with name ${data.name}`;
     } catch (err) {
         statusCode = 400;
         body = err.message;
@@ -41,6 +42,7 @@ exports.createClass = async (event, context) => {
     };
 };
 
+//DONE: Working
 exports.getClass = async (event, context) => {
     let body = {}; let statusCode = 200;
     const headers = {
@@ -50,8 +52,10 @@ exports.getClass = async (event, context) => {
     const params = {
         TableName: SCHOOL_TABLE,
         Key: {
-            id: event.pathParameters.id,
+            identifier: "#class",
+            id: `class::${event.pathParameters.id}`,
         },
+        "ProjectionExpression": "id, entryName",
     };
 
     try {
@@ -61,8 +65,49 @@ exports.getClass = async (event, context) => {
         body = err.message;
         console.log(err);
     } finally {
+        //A log to see if item with given key exists
+        if (body.Item == undefined || body.Item == null) {
+            body.message = `Item with id ${event.pathParameters.id} DNE`;
+        }
         body = JSON.stringify(body);
     }
+
+    return {
+        statusCode,
+        body,
+        headers,
+    };
+};
+
+//DONE: Working
+exports.listClasses = async (event, context) => {
+    let body = {}; let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
+
+    var params = {
+        TableName: SCHOOL_TABLE,
+        ExpressionAttributeValues: {
+            ":identifier": "#class",
+            ":id": "class::"
+        },
+        "ProjectionExpression": "id, entryName",
+        KeyConditionExpression: 'identifier = :identifier AND begins_with(id, :id)',
+    };
+
+    try {
+        body = await dynamoDb.query(params).promise();
+        console.log(body);
+    } catch (err) {
+        statusCode = 400;
+        body = err.message;
+        console.log(err);
+    } finally {
+        body = JSON.stringify(body);
+    }
+
+    console.log(body);
 
     return {
         statusCode,
@@ -101,7 +146,7 @@ exports.updateClass = async (event, context) => {
         statusCode = 400;
         body = error.message;
         console.log(error);
-    } finally { 
+    } finally {
         body = JSON.stringify(body);
     }
 

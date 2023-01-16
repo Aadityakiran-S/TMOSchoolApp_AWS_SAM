@@ -1,9 +1,9 @@
 const AWS = require("aws-sdk");
-
-const TODO_TABLE = process.env.TODO_TABLE;
+const SCHOOL_TABLE = process.env.SCHOOL_TABLE;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
-const { "v4": uuid } = require('uuid');
+const uuid = require('uuid');
 
+//DONE: Working
 exports.createTeacher = async (event, context) => {
     const timestamp = new Date().getTime();
     const data = JSON.parse(event.body);
@@ -16,7 +16,8 @@ exports.createTeacher = async (event, context) => {
     const params = {
         TableName: SCHOOL_TABLE,
         Item: {
-            id: uuid.v1(),
+            identifier: "#teacher",
+            id: `teacher::${uuid.v1()}`,
             entryName: data.name,
             createdAt: timestamp,
             updatedAt: timestamp,
@@ -25,7 +26,7 @@ exports.createTeacher = async (event, context) => {
 
     try {
         body = await dynamoDb.put((params)).promise();
-        body.message = `Successfully created item with namne ${data.name}`;
+        body.message = `Successfully created teacher with name ${data.name}`;
     } catch (err) {
         statusCode = 400;
         body = err.message;
@@ -41,6 +42,7 @@ exports.createTeacher = async (event, context) => {
     };
 };
 
+//DONE: Working
 exports.getTeacher = async (event, context) => {
     let body = {}; let statusCode = 200;
     const headers = {
@@ -50,8 +52,10 @@ exports.getTeacher = async (event, context) => {
     const params = {
         TableName: SCHOOL_TABLE,
         Key: {
-            id: event.pathParameters.id,
+            identifier: "#teacher",
+            id: `teacher::${event.pathParameters.id}`,
         },
+        "ProjectionExpression": "entryName", 
     };
 
     try {
@@ -61,8 +65,49 @@ exports.getTeacher = async (event, context) => {
         body = err.message;
         console.log(err);
     } finally {
+        //A log to see if item with given key exists
+        if (body.Item == undefined || body.Item == null) {
+            body.message = `Item with id ${event.pathParameters.id} DNE`;
+        }
         body = JSON.stringify(body);
     }
+
+    return {
+        statusCode,
+        body,
+        headers,
+    };
+};
+
+//DONE: Working
+exports.listTeachers = async (event, context) => {
+    let body = {}; let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
+
+    var params = {
+        TableName: SCHOOL_TABLE,
+        ExpressionAttributeValues: {
+            ":identifier" : "#teacher",
+            ":id" : "teacher::"
+        },
+        "ProjectionExpression": "id, entryName", 
+        KeyConditionExpression: 'identifier = :identifier AND begins_with(id, :id)',
+    };
+
+    try {
+        body = await dynamoDb.query(params).promise();
+        console.log(body);
+    } catch (err) {
+        statusCode = 400;
+        body = err.message;
+        console.log(err);
+    } finally {
+        body = JSON.stringify(body);
+    }
+
+    console.log(body);
 
     return {
         statusCode,
