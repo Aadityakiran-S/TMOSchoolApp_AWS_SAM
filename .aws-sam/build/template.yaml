@@ -7,7 +7,7 @@ Description: 'tmo-assignment-school-app
   '
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 500
     MemorySize: 128
     Runtime: nodejs16.x
     Architectures:
@@ -298,11 +298,11 @@ Resources:
             Method: delete
     Metadata:
       SamResourceId: DeleteClassFunction
-  EnrollStudentToClassFunction:
+  AssignStudentToClassFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: EnrollStudentToClassFunction
-      Handler: other-access-patterns.enrollStudentToClass
+      CodeUri: AssignStudentToClassFunction
+      Handler: other-access-patterns.assignStudentToClass
       Policies:
       - DynamoDBCrudPolicy:
           TableName:
@@ -311,10 +311,10 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /student/enroll/
+            Path: /student/assign/
             Method: post
     Metadata:
-      SamResourceId: EnrollStudentToClassFunction
+      SamResourceId: AssignStudentToClassFunction
   RemoveStudentFromClassFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -379,7 +379,7 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /student/list/{id}
+            Path: /class/list/{id}
             Method: get
     Metadata:
       SamResourceId: ListAllStudentsInClassFunction

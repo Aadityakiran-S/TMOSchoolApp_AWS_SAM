@@ -8,6 +8,6 @@ architecture = "x86_64"
 handler = "other-access-patterns.listAllEntries"
 manifest_hash = ""
 packagetype = "Zip"
-functions = ["ListAllEntriesFunction", "CreateStudentFunction", "GetStudentFunction", "ListStudentsFunction", "UpdateStudentFunction", "DeleteStudentFunction", "CreateTeacherFunction", "GetTeacherFunction", "ListTeachersFunction", "UpdateTeacherFunction", "DeleteTeacherFunction", "CreateClassFunction", "GetClassFunction", "ListClassessFunction", "UpdateClassFunction", "DeleteClassFunction", "EnrollStudentToClassFunction", "RemoveStudentFromClassFunction", "AssignTeacherToClassFunction", "RemoveTeacherFromClass", "ListAllStudentsInClassFunction", "ListAllClassByTeacherFunction"]
+functions = ["ListAllEntriesFunction", "CreateStudentFunction", "GetStudentFunction", "ListStudentsFunction", "UpdateStudentFunction", "DeleteStudentFunction", "CreateTeacherFunction", "GetTeacherFunction", "ListTeachersFunction", "UpdateTeacherFunction", "DeleteTeacherFunction", "CreateClassFunction", "GetClassFunction", "ListClassessFunction", "UpdateClassFunction", "DeleteClassFunction", "AssignStudentToClassFunction", "RemoveStudentFromClassFunction", "AssignTeacherToClassFunction", "RemoveTeacherFromClass", "ListAllStudentsInClassFunction", "ListAllClassByTeacherFunction"]
 
 [layer_build_definitions]

@@ -3,7 +3,7 @@ const SCHOOL_TABLE = process.env.SCHOOL_TABLE;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const uuid = require('uuid');
 
-//DONE: Working
+//DONE
 exports.createTeacher = async (event, context) => {
     const timestamp = new Date().getTime();
     const data = JSON.parse(event.body);
@@ -18,7 +18,7 @@ exports.createTeacher = async (event, context) => {
         Item: {
             identifier: "#teacher",
             id: `teacher::${uuid.v1()}`,
-            entryName: data.name,
+            teacherName: data.name,
             createdAt: timestamp,
             updatedAt: timestamp,
         },
@@ -42,7 +42,7 @@ exports.createTeacher = async (event, context) => {
     };
 };
 
-//DONE: Working
+//DONE
 exports.getTeacher = async (event, context) => {
     let body = {}; let statusCode = 200;
     const headers = {
@@ -55,7 +55,7 @@ exports.getTeacher = async (event, context) => {
             identifier: "#teacher",
             id: `teacher::${event.pathParameters.id}`,
         },
-        "ProjectionExpression": "entryName", 
+        "ProjectionExpression": "teacherName", 
     };
 
     try {
@@ -79,7 +79,7 @@ exports.getTeacher = async (event, context) => {
     };
 };
 
-//DONE: Working
+//DONE
 exports.listTeachers = async (event, context) => {
     let body = {}; let statusCode = 200;
     const headers = {
@@ -92,7 +92,7 @@ exports.listTeachers = async (event, context) => {
             ":identifier" : "#teacher",
             ":id" : "teacher::"
         },
-        "ProjectionExpression": "id, entryName", 
+        "ProjectionExpression": "id, teacherName", 
         KeyConditionExpression: 'identifier = :identifier AND begins_with(id, :id)',
     };
 
@@ -134,7 +134,7 @@ exports.updateTeacher = async (event, context) => {
             ":updatedAt": datetime,
         },
         UpdateExpression:
-            "set entryName = :name, updatedAt = :updatedAt",
+            "set teacherName = :name, updatedAt = :updatedAt",
         ReturnValues: "ALL_NEW",
     };
 
@@ -166,13 +166,14 @@ exports.deleteTeacher = async (event, context) => {
     const params = {
         TableName: SCHOOL_TABLE,
         Key: {
-            id: event.pathParameters.id,
+            identifier: "#teacher",
+            id: `teacher::${event.pathParameters.id}`,
         },
     };
 
     try {
         body = await dynamoDb.delete(params).promise();
-        body.message = `Successfully deleted item with ID ${event.pathParameters.id}`;
+        body.message = `Successfully deleted teacher with ID ${event.pathParameters.id}`;
     } catch (err) {
         statusCode = 400;
         body = err.message;

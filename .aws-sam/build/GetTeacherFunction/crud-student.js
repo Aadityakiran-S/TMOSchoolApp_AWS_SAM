@@ -18,7 +18,7 @@ exports.createStudent = async (event, context) => {
         Item: {
             identifier: "#student",
             id: `student::${uuid.v1()}`,
-            entryName: data.name,
+            studentName: data.name,
             createdAt: timestamp,
             updatedAt: timestamp,
         },
@@ -55,7 +55,7 @@ exports.getStudent = async (event, context) => {
             identifier: "#student",
             id: `student::${event.pathParameters.id}`,
         },
-        "ProjectionExpression": "entryName", 
+        "ProjectionExpression": "studentName", 
     };
 
     try {
@@ -92,7 +92,7 @@ exports.listStudents = async (event, context) => {
             ":identifier" : "#student",
             ":id" : "student::"
         },
-        "ProjectionExpression": "id, entryName", 
+        "ProjectionExpression": "id, studentName", 
         KeyConditionExpression: 'identifier = :identifier AND begins_with(id, :id)',
     };
 
@@ -134,7 +134,7 @@ exports.updateStudent = async (event, context) => {
             ":updatedAt": datetime,
         },
         UpdateExpression:
-            "set entryName = :name, updatedAt = :updatedAt",
+            "set studentName = :name, updatedAt = :updatedAt",
         ReturnValues: "ALL_NEW",
     };
 
@@ -173,7 +173,7 @@ exports.deleteStudent = async (event, context) => {
 
     try {
         body = await dynamoDb.delete(params).promise();
-        body.message = `Successfully deleted item with ID ${event.pathParameters.id}`;
+        body.message = `Successfully deleted student with ID ${event.pathParameters.id}`;
     } catch (err) {
         statusCode = 400;
         body = err.message;

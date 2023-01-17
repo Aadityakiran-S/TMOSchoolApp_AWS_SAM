@@ -8,7 +8,7 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 500
     MemorySize: 128
     Runtime: nodejs16.x
     Architectures:
@@ -266,12 +266,11 @@ Resources:
             Path: /class/{id}
             Method: delete
 
-  #Pass both IDs
-  EnrollStudentToClassFunction:
+  AssignStudentToClassFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
-      Handler: other-access-patterns.enrollStudentToClass
+      Handler: other-access-patterns.assignStudentToClass
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref SchoolDBTable
@@ -279,10 +278,9 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /student/enroll/
+            Path: /student/assign/
             Method: post
 
-  #Pass both IDs
   RemoveStudentFromClassFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -298,7 +296,6 @@ Resources:
             Path: /student/remove/
             Method: delete
 
-  #Pass both IDs
   AssignTeacherToClassFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -314,7 +311,6 @@ Resources:
             Path: /teacher/assign/
             Method: post
   
-  #Pass both IDs
   RemoveTeacherFromClass:
     Type: AWS::Serverless::Function
     Properties:
@@ -342,7 +338,7 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /student/list/{id}
+            Path: /class/list/{id}
             Method: get
 
   ListAllClassByTeacherFunction:

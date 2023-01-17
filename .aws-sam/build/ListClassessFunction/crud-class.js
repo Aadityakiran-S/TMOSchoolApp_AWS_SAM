@@ -18,7 +18,7 @@ exports.createClass = async (event, context) => {
         Item: {
             identifier: "#class",
             id: `class::${uuid.v1()}`,
-            entryName: data.name,
+            className: data.name,
             createdAt: timestamp,
             updatedAt: timestamp,
         },
@@ -55,7 +55,7 @@ exports.getClass = async (event, context) => {
             identifier: "#class",
             id: `class::${event.pathParameters.id}`,
         },
-        "ProjectionExpression": "id, entryName",
+        "ProjectionExpression": "id, className",
     };
 
     try {
@@ -92,7 +92,7 @@ exports.listClasses = async (event, context) => {
             ":identifier": "#class",
             ":id": "class::"
         },
-        "ProjectionExpression": "id, entryName",
+        "ProjectionExpression": "id, className",
         KeyConditionExpression: 'identifier = :identifier AND begins_with(id, :id)',
     };
 
@@ -134,7 +134,7 @@ exports.updateClass = async (event, context) => {
             ":updatedAt": datetime,
         },
         UpdateExpression:
-            "set entryName = :name, updatedAt = :updatedAt",
+            "set className = :name, updatedAt = :updatedAt",
         ReturnValues: "ALL_NEW",
     };
 
@@ -166,13 +166,14 @@ exports.deleteClass = async (event, context) => {
     const params = {
         TableName: SCHOOL_TABLE,
         Key: {
-            id: event.pathParameters.id,
+            identifier: "#class",
+            id: `class::${event.pathParameters.id}`,
         },
     };
 
     try {
         body = await dynamoDb.delete(params).promise();
-        body.message = `Successfully deleted item with ID ${event.pathParameters.id}`;
+        body.message = `Successfully deleted class with ID ${event.pathParameters.id}`;
     } catch (err) {
         statusCode = 400;
         body = err.message;
