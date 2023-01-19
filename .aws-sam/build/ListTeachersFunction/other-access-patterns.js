@@ -1,8 +1,9 @@
 const AWS = require("aws-sdk");
 const SCHOOL_TABLE = process.env.SCHOOL_TABLE;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const helper = require(".helper/helper");
 
-//DONE: Working
+//DONE
 exports.assignStudentToClass = async (event, context) => {
     const timestamp = new Date().getTime();
     const data = JSON.parse(event.body);
@@ -76,7 +77,7 @@ exports.assignStudentToClass = async (event, context) => {
             inputClassName = body.Item.className;
         }
     }
-    //#endregion
+    //#endregion    
 
     //Actually enrolling student in class
     params = {
@@ -111,7 +112,7 @@ exports.assignStudentToClass = async (event, context) => {
     };
 };
 
-//DONE: Working
+//DONE
 exports.removeStudentFromClass = async (event, context) => {
     let body = {}; let statusCode = 200;
     const data = JSON.parse(event.body);
@@ -212,7 +213,7 @@ exports.removeStudentFromClass = async (event, context) => {
     };
 };
 
-//DONE: Working
+//DONE
 exports.assignTeacherToClass = async (event, context) => {
     const timestamp = new Date().getTime();
     const data = JSON.parse(event.body);
@@ -318,7 +319,7 @@ exports.assignTeacherToClass = async (event, context) => {
     };
 };
 
-//DONE: Working
+//DONE
 exports.removeTeacherFromClass = async (event, context) => {
     let body = {}; let statusCode = 200;
     const data = JSON.parse(event.body);
@@ -417,7 +418,7 @@ exports.removeTeacherFromClass = async (event, context) => {
     };
 };
 
-//DONE: Working
+//DONE
 exports.listAllStudentsInClass = async (event, context) => {
     let body = {}; let statusCode = 200;
     const headers = {
@@ -487,7 +488,7 @@ exports.listAllStudentsInClass = async (event, context) => {
     };
 };
 
-//DONE: Working
+//DONE
 exports.listAllClassByTeacher = async (event, context) => {
     let body = {}; let statusCode = 200;
     const headers = {
@@ -536,7 +537,7 @@ exports.listAllClassByTeacher = async (event, context) => {
             ":id": "class::"
         },
         KeyConditionExpression: 'identifier = :identifier AND begins_with(id, :id)',
-        ProjectionExpression: "teacherName",
+        ProjectionExpression: "className",
     };
 
     try {
@@ -558,6 +559,7 @@ exports.listAllClassByTeacher = async (event, context) => {
     };
 };
 
+//DONE
 exports.listAllEntries = async (event, context) => {
     const timestamp = new Date().getTime();
     const data = JSON.parse(event.body);

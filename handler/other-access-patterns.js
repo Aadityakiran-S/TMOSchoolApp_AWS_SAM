@@ -1,6 +1,7 @@
 const AWS = require("aws-sdk");
 const SCHOOL_TABLE = process.env.SCHOOL_TABLE;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const helper = require(".helper/helper");
 
 //DONE
 exports.assignStudentToClass = async (event, context) => {
@@ -76,7 +77,7 @@ exports.assignStudentToClass = async (event, context) => {
             inputClassName = body.Item.className;
         }
     }
-    //#endregion
+    //#endregion    
 
     //Actually enrolling student in class
     params = {
@@ -536,7 +537,7 @@ exports.listAllClassByTeacher = async (event, context) => {
             ":id": "class::"
         },
         KeyConditionExpression: 'identifier = :identifier AND begins_with(id, :id)',
-        ProjectionExpression: "teacherName",
+        ProjectionExpression: "className",
     };
 
     try {

@@ -116,6 +116,7 @@ exports.listTeachers = async (event, context) => {
     };
 };
 
+//PENDING
 exports.updateTeacher = async (event, context) => {
     const datetime = new Date().toISOString();
     const data = JSON.parse(event.body);
@@ -157,13 +158,49 @@ exports.updateTeacher = async (event, context) => {
     };
 };
 
+//NEED TO CHECK
 exports.deleteTeacher = async (event, context) => {
-    let body = {}; let statusCode = 200;
+    let keys = {}; let body = {}; let params = {}; let requests = {};
+    let inputTeacherName = ""; let teacher_class_body = {};
+    let statusCode = 200;
     const headers = {
         "Content-Type": "application/json",
     };
 
-    const params = {
+    //#region  Error Check
+    params = {
+        TableName: SCHOOL_TABLE,
+        Key: {
+            identifier: "#teacher",
+            id: `teacher::${event.pathParameters.id}`,
+        },
+        "ProjectionExpression": "id, teacherName",
+    };
+    try {
+        body = await dynamoDb.get(params).promise();
+    } catch (err) {
+        statusCode = 400;
+        body = err.message;
+        console.log(err);
+    } finally {
+        //A log to see if item with given key exists
+        if (body.Item == undefined || body.Item == null) {
+            body.message = `Teacher with id ${event.pathParameters.id} DNE`;
+            statusCode = 400;
+            return {
+                statusCode,
+                body: JSON.stringify(body),
+                headers
+            };
+        }
+        else {
+            inputTeacherName = body.Item.teacherName;
+        }
+    }
+    //#endregion
+
+    //#region Deleting teacher alone mapping
+    params = {
         TableName: SCHOOL_TABLE,
         Key: {
             identifier: "#teacher",
@@ -173,18 +210,72 @@ exports.deleteTeacher = async (event, context) => {
 
     try {
         body = await dynamoDb.delete(params).promise();
-        body.message = `Successfully deleted teacher with ID ${event.pathParameters.id}`;
+        body.message1 = `Successfully deleted teacher along param with ID ${event.pathParameters.id}`;
     } catch (err) {
         statusCode = 400;
         body = err.message;
         console.log(err);
     } finally {
-        body = JSON.stringify(body);
+        console.log(body);
+    }
+    //#endregion
+
+    //#region  Deleting teacher-class mapping
+    //Fetching all keys of class-student mapping 
+    params = {
+        TableName: SCHOOL_TABLE,
+        ExpressionAttributeValues: {
+            ':identifier': `teacher::${event.pathParameters.id}`,
+            ':id': 'class::'
+        },
+        KeyConditionExpression:
+            'identifier = :identifier AND begins_with(id, :id)',
+        ProjectionExpression: 'identifier, id, teacherName, className',
+    };
+
+    try {
+        body = await dynamoDb.query((params)).promise();
+    } catch (err) {
+        statusCode = 400;
+        body = err.message;
+        console.log(err);
+    } finally {
+        keys = body.Items.map(item => [item.identifier, item.id]);
+        console.log(keys);
     }
 
+    // //Deleting all entries with keys from teacher-class mapping
+    requests = keys.map((item) => ({
+        DeleteRequest: {
+            Key: {
+                identifier: item[0],
+                id: item[1]
+            }
+        }
+    }));
+
+    params = {
+        RequestItems: {
+            [SCHOOL_TABLE]: requests
+        }
+    };
+
+    try {
+        teacher_class_body = await dynamoDb.batchWrite((params)).promise();
+    } catch (err) {
+        statusCode = 400;
+        teacher_class_body = err.message;
+        console.log(err);
+    } finally {
+        JSON.stringify(teacher_class_body);
+        console.log(teacher_class_body);
+    }
+    //#endregion
+
+    body.message = `Successfully deleted class with name ${inputTeacherName} and all associated entries`;
     return {
         statusCode,
-        body,
+        body: JSON.stringify(body),
         headers,
     };
 };

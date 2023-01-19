@@ -98,7 +98,7 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /student/{id}
+            Path: /student
             Method: put
 
   DeleteStudentFunction:
@@ -173,7 +173,7 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /teacher/{id}
+            Path: /teacher
             Method: put
 
   DeleteTeacherFunction:
@@ -248,7 +248,7 @@ Resources:
         CreateStudent:
           Type: Api
           Properties:
-            Path: /class/{id}
+            Path: /class/
             Method: put
 
   DeleteClassFunction:
@@ -356,7 +356,7 @@ Resources:
             Path: /teacher/list/{id}
             Method: get
 
-  SchoolDBTable: #Haven't provided appropriate schema yet
+  SchoolDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Ref Table
@@ -364,6 +364,10 @@ Resources:
         - AttributeName: identifier
           AttributeType: S
         - AttributeName: id
+          AttributeType: S
+        - AttributeName: student_id_gsi
+          AttributeType: S
+        - AttributeName: class_id_gsi
           AttributeType: S
       KeySchema:
         - AttributeName: identifier
@@ -387,10 +391,10 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
-      # BillingMode: PAY_PER_REQUEST
+      # ProvisionedThroughput:
+      #   ReadCapacityUnits: 1
+      #   WriteCapacityUnits: 1
+      BillingMode: PAY_PER_REQUEST
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
