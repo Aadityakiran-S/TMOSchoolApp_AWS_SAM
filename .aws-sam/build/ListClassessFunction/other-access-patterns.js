@@ -1,85 +1,52 @@
 const AWS = require("aws-sdk");
 const SCHOOL_TABLE = process.env.SCHOOL_TABLE;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
-const helper = require(".helper/helper");
+const helper = require("./.helper/helper");
 
 //DONE
 exports.assignStudentToClass = async (event, context) => {
     const timestamp = new Date().getTime();
-    const data = JSON.parse(event.body);
-
+    let params = {}; let inputStudentName; let inputClassName;
     let body = {}; let statusCode = 200;
+    const data = JSON.parse(event.body);
     const headers = {
         "Content-Type": "application/json",
     };
 
     //#region  Error Check
-    let params = {};
-    let inputStudentName; let inputClassName;
-    // Checking if student exists
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#student",
-            id: `student::${data.studentID}`,
-        },
-        "ProjectionExpression": "id, studentName",
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //Checking if class exists
+    body = await helper.doesEntityExist(helper.EntityTypes.class, data.classID);
+    if (body.doesEntityExist === false) {
+        body.message = `class with ID ${data.classID} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Student with id ${data.studentID} DNE`;
-            statusCode = 400;
-            return {
-                statusCode,
-                body: JSON.stringify(body),
-                headers
-            };
-        }
-        else {
-            inputStudentName = body.Item.studentName;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    else {
+        inputClassName = body.Item.className;
     }
 
-    //Checking if class exists
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#class",
-            id: `class::${data.classID}`,
-        },
-        "ProjectionExpression": "id, className",
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //Checking of student exists
+    body = await helper.doesEntityExist(helper.EntityTypes.student, data.studentID);
+    //If given class DNE
+    if (body.doesEntityExist === false) {
+        body.message = `student with ID ${data.studentID} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Class with id ${data.classID} DNE`;
-            statusCode = 400;
-            return {
-                statusCode,
-                body: JSON.stringify(body),
-                headers
-            };
-        }
-        else {
-            inputClassName = body.Item.className;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    else {
+        inputStudentName = body.Item.studentName;
     }
     //#endregion    
 
-    //Actually enrolling student in class
+    //#region Actually enrolling student in class
     params = {
         TableName: SCHOOL_TABLE,
         Item: {
@@ -104,6 +71,7 @@ exports.assignStudentToClass = async (event, context) => {
     finally {
         body = JSON.stringify(body);
     }
+    //#endregion
 
     return {
         statusCode,
@@ -114,79 +82,47 @@ exports.assignStudentToClass = async (event, context) => {
 
 //DONE
 exports.removeStudentFromClass = async (event, context) => {
-    let body = {}; let statusCode = 200;
+    let inputStudentName = ""; let inputClassName = "";
+    let params = {}; let body = {}; let statusCode = 200;
     const data = JSON.parse(event.body);
     const headers = {
         "Content-Type": "application/json",
     };
 
     //#region  Error Check
-    let params = {};
-    let inputStudentName; let inputClassName;
-    // Checking if student exists
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#student",
-            id: `student::${data.studentID}`,
-        },
-        "ProjectionExpression": "id, studentName",
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //Checking if class exists
+    body = await helper.doesEntityExist(helper.EntityTypes.class, data.classID);
+    if (body.doesEntityExist === false) {
+        body.message = `class with ID ${data.classID} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Student with id ${data.studentID} DNE`;
-            statusCode = 400;
-            return {
-                statusCode,
-                body: JSON.stringify(body),
-                headers
-            };
-        }
-        else {
-            inputStudentName = body.Item.studentName;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    else {
+        inputClassName = body.Item.className;
     }
 
-    //Checking if class exists
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#class",
-            id: `class::${data.classID}`,
-        },
-        "ProjectionExpression": "id, className",
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //Checking of student exists
+    body = await helper.doesEntityExist(helper.EntityTypes.student, data.studentID);
+    //If given class DNE
+    if (body.doesEntityExist === false) {
+        body.message = `student with ID ${data.studentID} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Class with id ${data.classID} DNE`;
-            statusCode = 400;
-            return {
-                statusCode,
-                body: JSON.stringify(body),
-                headers
-            };
-        }
-        else {
-            inputClassName = body.Item.className;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    else {
+        inputStudentName = body.Item.studentName;
     }
     //#endregion
 
-    //Actually removing student from class
+    //#region  Actually removing student from class
     params = {
         TableName: SCHOOL_TABLE,
         Key: {
@@ -206,6 +142,8 @@ exports.removeStudentFromClass = async (event, context) => {
         body = JSON.stringify(body);
     }
 
+    //#endregion
+
     return {
         statusCode,
         body,
@@ -216,78 +154,46 @@ exports.removeStudentFromClass = async (event, context) => {
 //DONE
 exports.assignTeacherToClass = async (event, context) => {
     const timestamp = new Date().getTime();
+    let params = {}; let inputTeacherName; let inputClassName;
     const data = JSON.parse(event.body);
-
     let body = {}; let statusCode = 200;
     const headers = {
         "Content-Type": "application/json",
     };
 
     //#region  Error Check
-    let params = {};
-    let inputTeacherName; let inputClassName;
-    //Checking if teacher exists
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#teacher",
-            id: `teacher::${data.teacherID}`,
-        },
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //Checking if class exists
+    body = await helper.doesEntityExist(helper.EntityTypes.class, data.classID);
+    if (body.doesEntityExist === false) {
+        body.message = `class with ID ${data.classID} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Teacher with id ${data.teacherID} DNE`;
-            body = JSON.stringify(body);
-            return {
-                statusCode,
-                body,
-                headers
-            };
-        }
-        else {
-            inputTeacherName = body.Item.teacherName;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    else {
+        inputClassName = body.Item.className;
     }
 
-    //Checking if class exists
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#class",
-            id: `class::${data.classID}`,
-        },
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //Checking of teacher exists
+    body = await helper.doesEntityExist(helper.EntityTypes.teacher, data.teacherID);
+    if (body.doesEntityExist === false) {
+        body.message = `teacher with ID ${data.teacherID} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Class with id ${data.classID} DNE`;
-            body = JSON.stringify(body);
-            return {
-                statusCode,
-                body,
-                headers
-            };
-        }
-        else {
-            inputClassName = body.Item.className;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    else {
+        inputTeacherName = body.Item.teacherName;
     }
     //#endregion
 
-    //Actually assigning teacher to class
+    //#region Actually assigning teacher to class
     params = {
         TableName: SCHOOL_TABLE,
         Item: {
@@ -312,6 +218,8 @@ exports.assignTeacherToClass = async (event, context) => {
         body = JSON.stringify(body);
     }
 
+    //#endregion
+
     return {
         statusCode,
         body,
@@ -322,76 +230,45 @@ exports.assignTeacherToClass = async (event, context) => {
 //DONE
 exports.removeTeacherFromClass = async (event, context) => {
     let body = {}; let statusCode = 200;
+    let params = {}; let inputTeacherName; let inputClassName;
     const data = JSON.parse(event.body);
     const headers = {
         "Content-Type": "application/json",
     };
 
     //#region  Error Check
-    let params = {};
-    let inputTeacherName; let inputClassName;
-    //Checking if teacher exists
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#teacher",
-            id: `teacher::${data.teacherID}`,
-        },
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //Checking if class exists
+    body = await helper.doesEntityExist(helper.EntityTypes.class, data.classID);
+    if (body.doesEntityExist === false) {
+        body.message = `class with ID ${data.classID} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Teacher with id ${data.teacherID} DNE`;
-            body = JSON.stringify(body);
-            return {
-                statusCode,
-                body,
-                headers
-            };
-        }
-        else {
-            inputTeacherName = body.Item.teacherName;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    else {
+        inputClassName = body.Item.className;
     }
 
-    //Checking if class exists
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#class",
-            id: `class::${data.classID}`,
-        },
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //Checking of teacher exists
+    body = await helper.doesEntityExist(helper.EntityTypes.teacher, data.teacherID);
+    if (body.doesEntityExist === false) {
+        body.message = `teacher with ID ${data.teacherID} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Class with id ${data.classID} DNE`;
-            body = JSON.stringify(body);
-            return {
-                statusCode,
-                body,
-                headers
-            };
-        }
-        else {
-            inputClassName = body.Item.className;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    else {
+        inputTeacherName = body.Item.teacherName;
     }
     //#endregion
 
-    //Actually removing teacher from class
+    //#region  Actually removing teacher from class
     params = {
         TableName: SCHOOL_TABLE,
         Key: {
@@ -411,6 +288,8 @@ exports.removeTeacherFromClass = async (event, context) => {
         body = JSON.stringify(body);
     }
 
+    //#endregion
+
     return {
         statusCode,
         body,
@@ -421,45 +300,29 @@ exports.removeTeacherFromClass = async (event, context) => {
 //DONE
 exports.listAllStudentsInClass = async (event, context) => {
     let body = {}; let statusCode = 200;
+    let params = {}; let inputClassName;
     const headers = {
         "Content-Type": "application/json",
     };
 
     //#region  Error Check
-    let params = {};
-    let inputClassName;
     //Checking if class exists
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#class",
-            id: `class::${event.pathParameters.id}`,
-        },
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    body = await helper.doesEntityExist(helper.EntityTypes.class, event.pathParameters.id);
+    if (body.doesEntityExist === false) {
+        body.message = `class with ID ${event.pathParameters.id} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Class with id ${event.pathParameters.id} DNE`;
-            body = JSON.stringify(body);
-            return {
-                statusCode,
-                body,
-                headers
-            };
-        }
-        else {
-            inputClassName = body.Item.className;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    else {
+        inputClassName = body.Item.className;
     }
     //#endregion
 
-    //Actually doing the listing
+    //#region Actually doing the listing
     params = {
         TableName: SCHOOL_TABLE,
         ExpressionAttributeValues: {
@@ -480,6 +343,7 @@ exports.listAllStudentsInClass = async (event, context) => {
         body.message = `All students in ${inputClassName} are...`
         body = JSON.stringify(body);
     }
+    //#endregion
 
     return {
         statusCode,
@@ -491,45 +355,29 @@ exports.listAllStudentsInClass = async (event, context) => {
 //DONE
 exports.listAllClassByTeacher = async (event, context) => {
     let body = {}; let statusCode = 200;
+    let params = {}; let inputTeacherName;
     const headers = {
         "Content-Type": "application/json",
     };
 
     //#region  Error Check
-    let params = {};
-    let inputTeacherName;
-    //Checking if teacher exists
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#teacher",
-            id: `teacher::${event.pathParameters.id}`,
-        },
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //Checking of teacher exists
+    body = await helper.doesEntityExist(helper.EntityTypes.teacher, event.pathParameters.id);
+    if (body.doesEntityExist === false) {
+        body.message = `teacher with ID ${event.pathParameters.id} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Teacher with id ${event.pathParameters.id} DNE`;
-            body = JSON.stringify(body);
-            return {
-                statusCode,
-                body,
-                headers
-            };
-        }
-        else {
-            inputTeacherName = body.Item.teacherName;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    else {
+        inputTeacherName = body.Item.teacherName;
     }
     //#endregion
 
-    //Actually doing the listing
+    //#region Actually doing the listing
     params = {
         TableName: SCHOOL_TABLE,
         ExpressionAttributeValues: {
@@ -551,6 +399,7 @@ exports.listAllClassByTeacher = async (event, context) => {
         body.message = `All classes taken by ${inputTeacherName} are...`
         body = JSON.stringify(body);
     }
+    //#endregion
 
     return {
         statusCode,
