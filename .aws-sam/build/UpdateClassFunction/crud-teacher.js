@@ -227,31 +227,8 @@ exports.deleteTeacher = async (event, context) => {
             console.log(keys);
 
             // //Deleting all entries with keys from teacher-class mapping
-            requests = keys.map((item) => ({
-                DeleteRequest: {
-                    Key: {
-                        identifier: item[0],
-                        id: item[1]
-                    }
-                }
-            }));
-
-            params = {
-                RequestItems: {
-                    [SCHOOL_TABLE]: requests
-                }
-            };
-
-            try {
-                teacher_class_body = await dynamoDb.batchWrite((params)).promise();
-            } catch (err) {
-                statusCode = 400;
-                teacher_class_body = err.message;
-                console.log(err);
-            } finally {
-                JSON.stringify(teacher_class_body);
-                console.log(teacher_class_body);
-            }
+            teacher_class_body = await helper.performBatchDeleteOperation(keys);
+            console.log(JSON.stringify(teacher_class_body));
         }
     }
     //#endregion

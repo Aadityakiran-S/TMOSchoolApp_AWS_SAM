@@ -226,32 +226,9 @@ exports.deleteStudent = async (event, context) => {
             keys = body.Items.map(item => [item.identifier, item.id]);
             console.log(keys);
 
-            // //Deleting all entries with keys from class-student mapping using batchWrite
-            requests = keys.map((item) => ({
-                DeleteRequest: {
-                    Key: {
-                        identifier: item[0],
-                        id: item[1]
-                    }
-                }
-            }));
-
-            params = {
-                RequestItems: {
-                    [SCHOOL_TABLE]: requests
-                }
-            };
-
-            try {
-                class_student_body = await dynamoDb.batchWrite((params)).promise();
-            } catch (err) {
-                statusCode = 400;
-                class_student_body = err.message;
-                console.log(err);
-            } finally {
-                body.message1 = `Deleted all entries where ${inputStudentName} is enrolled in class`;
-                console.log(class_student_body);
-            }
+            // //Deleting all entries with keys from class-student mapping
+            class_student_body = await helper.performBatchDeleteOperation(keys);
+            console.log(JSON.stringify(class_student_body));
         }
     }
     //#endregion

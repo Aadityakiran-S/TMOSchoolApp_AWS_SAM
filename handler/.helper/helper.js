@@ -35,10 +35,40 @@ async function doesEntityExist(entityType, entityID) {
     return body;
 }
 
+async function performBatchDeleteOperation(keys) {
+    let body = {};
+
+    requests = keys.map((item) => ({
+        DeleteRequest: {
+            Key: {
+                identifier: item[0],
+                id: item[1]
+            }
+        }
+    }));
+
+    params = {
+        RequestItems: {
+            [SCHOOL_TABLE]: requests
+        }
+    };
+
+    try {
+        body = await dynamoDb.batchWrite((params)).promise();
+    } catch (err) {
+        statusCode = 400;
+        body = err.message;
+        console.log(err);
+    }
+
+    console.log(body);
+    return body;
+}
+
 const EntityTypes = Object.freeze({
     student: 'student',
     teacher: 'teacher',
     class: 'class',
 });
 
-module.exports = { doesEntityExist, EntityTypes };
+module.exports = { doesEntityExist, performBatchDeleteOperation, EntityTypes };
