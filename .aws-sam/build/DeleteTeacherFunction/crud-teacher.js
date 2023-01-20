@@ -2,6 +2,7 @@ const AWS = require("aws-sdk");
 const SCHOOL_TABLE = process.env.SCHOOL_TABLE;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const uuid = require('uuid');
+const helper = require("./.helper/helper");
 
 //DONE
 exports.createTeacher = async (event, context) => {
@@ -55,7 +56,7 @@ exports.getTeacher = async (event, context) => {
             identifier: "#teacher",
             id: `teacher::${event.pathParameters.id}`,
         },
-        "ProjectionExpression": "teacherName", 
+        "ProjectionExpression": "teacherName",
     };
 
     try {
@@ -89,10 +90,10 @@ exports.listTeachers = async (event, context) => {
     var params = {
         TableName: SCHOOL_TABLE,
         ExpressionAttributeValues: {
-            ":identifier" : "#teacher",
-            ":id" : "teacher::"
+            ":identifier": "#teacher",
+            ":id": "teacher::"
         },
-        "ProjectionExpression": "id, teacherName", 
+        "ProjectionExpression": "id, teacherName",
         KeyConditionExpression: 'identifier = :identifier AND begins_with(id, :id)',
     };
 
@@ -147,7 +148,7 @@ exports.updateTeacher = async (event, context) => {
         statusCode = 400;
         body = error.message;
         console.log(error);
-    } finally { 
+    } finally {
         body = JSON.stringify(body);
     }
 
@@ -167,56 +168,34 @@ exports.deleteTeacher = async (event, context) => {
         "Content-Type": "application/json",
     };
 
-    //#region  Error Check
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#teacher",
-            id: `teacher::${event.pathParameters.id}`,
-        },
-        "ProjectionExpression": "id, teacherName",
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //#region  Deleting teacher alone mapping
+    body = await helper.doesEntityExist(helper.EntityTypes.teacher, event.pathParameters.id);
+    //If given class DNE
+    if (body.doesEntityExist === false) {
+        body.message = `teacher with ID ${event.pathParameters.id} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Teacher with id ${event.pathParameters.id} DNE`;
-            statusCode = 400;
-            return {
-                statusCode,
-                body: JSON.stringify(body),
-                headers
-            };
-        }
-        else {
-            inputTeacherName = body.Item.teacherName;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
     }
-    //#endregion
-
-    //#region Deleting teacher alone mapping
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#teacher",
-            id: `teacher::${event.pathParameters.id}`,
-        },
-    };
-
-    try {
-        body = await dynamoDb.delete(params).promise();
-        body.message1 = `Successfully deleted teacher along param with ID ${event.pathParameters.id}`;
-    } catch (err) {
-        statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        console.log(body);
+    else {
+        inputTeacherName = body.Item.teacherName;
+        params = {
+            TableName: SCHOOL_TABLE,
+            Key: {
+                identifier: "#teacher",
+                id: `teacher::${event.pathParameters.id}`,
+            },
+        };
+        try {
+            body = await dynamoDb.delete(params).promise();
+        } catch (err) {
+            statusCode = 400;
+            body = err.message;
+            console.log(err);
+        }
     }
     //#endregion
 
@@ -240,39 +219,44 @@ exports.deleteTeacher = async (event, context) => {
         body = err.message;
         console.log(err);
     } finally {
-        keys = body.Items.map(item => [item.identifier, item.id]);
-        console.log(keys);
-    }
+        if (body.ScannedCount == 0) {
+            console.log(`${inputTeacherName} is not assigned to any class`);
+        }
+        else {
+            keys = body.Items.map(item => [item.identifier, item.id]);
+            console.log(keys);
 
-    // //Deleting all entries with keys from teacher-class mapping
-    requests = keys.map((item) => ({
-        DeleteRequest: {
-            Key: {
-                identifier: item[0],
-                id: item[1]
+            // //Deleting all entries with keys from teacher-class mapping
+            requests = keys.map((item) => ({
+                DeleteRequest: {
+                    Key: {
+                        identifier: item[0],
+                        id: item[1]
+                    }
+                }
+            }));
+
+            params = {
+                RequestItems: {
+                    [SCHOOL_TABLE]: requests
+                }
+            };
+
+            try {
+                teacher_class_body = await dynamoDb.batchWrite((params)).promise();
+            } catch (err) {
+                statusCode = 400;
+                teacher_class_body = err.message;
+                console.log(err);
+            } finally {
+                JSON.stringify(teacher_class_body);
+                console.log(teacher_class_body);
             }
         }
-    }));
-
-    params = {
-        RequestItems: {
-            [SCHOOL_TABLE]: requests
-        }
-    };
-
-    try {
-        teacher_class_body = await dynamoDb.batchWrite((params)).promise();
-    } catch (err) {
-        statusCode = 400;
-        teacher_class_body = err.message;
-        console.log(err);
-    } finally {
-        JSON.stringify(teacher_class_body);
-        console.log(teacher_class_body);
     }
     //#endregion
 
-    body.message = `Successfully deleted class with name ${inputTeacherName} and all associated entries`;
+    body.message = `Successfully deleted teacher with name ${inputTeacherName} and all associated entries`;
     return {
         statusCode,
         body: JSON.stringify(body),

@@ -2,6 +2,7 @@ const AWS = require("aws-sdk");
 const SCHOOL_TABLE = process.env.SCHOOL_TABLE;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const uuid = require('uuid');
+const helper = require("./.helper/helper");
 
 //DONE
 exports.createStudent = async (event, context) => {
@@ -55,7 +56,7 @@ exports.getStudent = async (event, context) => {
             identifier: "#student",
             id: `student::${event.pathParameters.id}`,
         },
-        "ProjectionExpression": "studentName", 
+        "ProjectionExpression": "studentName",
     };
 
     try {
@@ -89,10 +90,10 @@ exports.listStudents = async (event, context) => {
     var params = {
         TableName: SCHOOL_TABLE,
         ExpressionAttributeValues: {
-            ":identifier" : "#student",
-            ":id" : "student::"
+            ":identifier": "#student",
+            ":id": "student::"
         },
-        "ProjectionExpression": "id, studentName", 
+        "ProjectionExpression": "id, studentName",
         KeyConditionExpression: 'identifier = :identifier AND begins_with(id, :id)',
     };
 
@@ -158,7 +159,7 @@ exports.updateStudent = async (event, context) => {
     };
 };
 
-//NEED TO CHECK
+//DONE
 exports.deleteStudent = async (event, context) => {
     let keys = {}; let body = {}; let params = {}; let requests = {};
     let inputStudentName = ""; let class_student_body = {};
@@ -167,56 +168,34 @@ exports.deleteStudent = async (event, context) => {
         "Content-Type": "application/json",
     };
 
-    //#region  Error Check
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#student",
-            id: `student::${event.pathParameters.id}`,
-        },
-        "ProjectionExpression": "id, studentName",
-    };
-    try {
-        body = await dynamoDb.get(params).promise();
-    } catch (err) {
+    //#region  Deleting student alone mapping
+    body = await helper.doesEntityExist(helper.EntityTypes.student, event.pathParameters.id);
+    //If given student DNE
+    if (body.doesEntityExist === false) {
+        body.message = `student with ID ${event.pathParameters.id} DNE`;
         statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        //A log to see if item with given key exists
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Student with id ${event.pathParameters.id} DNE`;
-            statusCode = 400;
-            return {
-                statusCode,
-                body: JSON.stringify(body),
-                headers
-            };
-        }
-        else {
-            inputStudentName = body.Item.studentName;
-        }
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
     }
-    //#endregion
-
-    //#region Deleting student alone mapping
-    params = {
-        TableName: SCHOOL_TABLE,
-        Key: {
-            identifier: "#student",
-            id: `student::${event.pathParameters.id}`,
-        },
-    };
-
-    try {
-        body = await dynamoDb.delete(params).promise();
-    } catch (err) {
-        statusCode = 400;
-        body = err.message;
-        console.log(err);
-    } finally {
-        body.message1 = `Successfully deleted ${inputStudentName} alone entry`;
-        console.log(body);
+    else {
+        inputStudentName = body.Item.studentName;
+        params = {
+            TableName: SCHOOL_TABLE,
+            Key: {
+                identifier: "#student",
+                id: `student::${event.pathParameters.id}`,
+            },
+        };
+        try {
+            body = await dynamoDb.delete(params).promise();
+        } catch (err) {
+            statusCode = 400;
+            body = err.message;
+            console.log(err);
+        }
     }
     //#endregion
 
@@ -233,7 +212,6 @@ exports.deleteStudent = async (event, context) => {
             'student_id_gsi = :gsi_key AND begins_with(identifier, :identifier)',
         ProjectionExpression: 'identifier, id, studentName, className',
     };
-
     try {
         body = await dynamoDb.query((params)).promise();
     } catch (err) {
@@ -241,39 +219,44 @@ exports.deleteStudent = async (event, context) => {
         body = err.message;
         console.log(err);
     } finally {
-        keys = body.Items.map(item => [item.identifier, item.id]);
-        console.log(keys);
-    }
+        if (body.ScannedCount == 0) {
+            console.log(`${inputStudentName} is not enrolled in any class`);
+        }
+        else {
+            keys = body.Items.map(item => [item.identifier, item.id]);
+            console.log(keys);
 
-    // //Deleting all entries with keys from class-student mapping using batchWrite
-    requests = keys.map((item) => ({
-        DeleteRequest: {
-            Key: {
-                identifier: item[0],
-                id: item[1]
+            // //Deleting all entries with keys from class-student mapping using batchWrite
+            requests = keys.map((item) => ({
+                DeleteRequest: {
+                    Key: {
+                        identifier: item[0],
+                        id: item[1]
+                    }
+                }
+            }));
+
+            params = {
+                RequestItems: {
+                    [SCHOOL_TABLE]: requests
+                }
+            };
+
+            try {
+                class_student_body = await dynamoDb.batchWrite((params)).promise();
+            } catch (err) {
+                statusCode = 400;
+                class_student_body = err.message;
+                console.log(err);
+            } finally {
+                body.message1 = `Deleted all entries where ${inputStudentName} is enrolled in class`;
+                console.log(class_student_body);
             }
         }
-    }));
-
-    params = {
-        RequestItems: {
-            [SCHOOL_TABLE]: requests
-        }
-    };
-
-    try {
-        class_student_body = await dynamoDb.batchWrite((params)).promise();
-    } catch (err) {
-        statusCode = 400;
-        class_student_body = err.message;
-        console.log(err);
-    } finally {
-        body.message2 = `Deleted all entries where ${inputStudentName} is enrolled in class`;
-        console.log(class_student_body);
     }
     //#endregion
 
-    body.message = `Successfully deleted class with name ${inputStudentName} and all associated entries`;
+    body.message = `Successfully deleted student with name ${inputStudentName} and all associated entries`;
     return {
         statusCode,
         body: JSON.stringify(body),

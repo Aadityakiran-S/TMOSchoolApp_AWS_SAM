@@ -3,9 +3,6 @@ const SCHOOL_TABLE = process.env.SCHOOL_TABLE;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 async function doesEntityExist(entityType, entityID) {
-
-    console.log("Entered function");
-
     let body = {};
     // Checking if entity exists
     const params = {
@@ -16,7 +13,6 @@ async function doesEntityExist(entityType, entityID) {
         },
     };
     try {
-        console.log("entered try");
         body = await dynamoDb.get(params).promise();
     } catch (err) {
         console.log(err);
@@ -36,7 +32,6 @@ async function doesEntityExist(entityType, entityID) {
         }
     }
 
-    console.log("Reached the place where we return");
     return body;
 }
 
