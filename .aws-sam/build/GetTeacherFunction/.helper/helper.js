@@ -65,10 +65,43 @@ async function performBatchDeleteOperation(keys) {
     return body;
 }
 
+async function checkIfMappingExists(identifierType, idType, identifier_ID, id_ID) {
+    let body = {};
+    const params = {
+        TableName: SCHOOL_TABLE,
+        Key: {
+            identifier: `${identifierType}::${identifier_ID}`,
+            id: `${idType}::${id_ID}`,
+        },
+    };
+
+    try {
+        body = await dynamoDb.get((params)).promise();
+    } catch (err) {
+        console.log(err);
+        body = err.message;
+        return body;
+    } finally {
+        if (body.Item == undefined || body.Item == null) {
+            console.log(`Given ${identifierType} is not assigned to ${idType}`);
+            body.message = `Given ${identifierType} is not assigned to ${idType}`;
+            body.doesMappingExist = false;
+        }
+        else {
+            body.doesMappingExist = true;
+            console.log(`Given ${identifierType} is already assigned to ${idType}`);
+            console.log(body);
+            body.message = `Given ${identifierType} is already assigned to ${idType}`;
+        }
+    }
+
+    return body;
+}
+
 const EntityTypes = Object.freeze({
     student: 'student',
     teacher: 'teacher',
     class: 'class',
 });
 
-module.exports = { doesEntityExist, performBatchDeleteOperation, EntityTypes };
+module.exports = { checkIfMappingExists, doesEntityExist, performBatchDeleteOperation, EntityTypes };

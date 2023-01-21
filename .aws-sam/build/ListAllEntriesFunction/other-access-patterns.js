@@ -44,6 +44,31 @@ exports.assignStudentToClass = async (event, context) => {
     else {
         inputStudentName = body.Item.studentName;
     }
+
+    //Check if student already enrolled in class
+    body = await helper.checkIfMappingExists(helper.EntityTypes.class, helper.EntityTypes.student,
+        data.classID, data.studentID);
+    //Someting went wrong with the get call
+    if(body.doesMappingExist === undefined || body.doesMappingExist === null){
+        console.log(`Something went wrong ${body}`);
+        statusCode = 400;
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    //Mapping already exists
+    else if(body.doesMappingExist === true){
+        console.log(`${inputStudentName} is already enrolled in ${inputClassName}`);
+        body.message = `${inputStudentName} is already enrolled in ${inputClassName}`;
+        statusCode = 400;
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
     //#endregion    
 
     //#region Actually enrolling student in class
@@ -120,6 +145,31 @@ exports.removeStudentFromClass = async (event, context) => {
     else {
         inputStudentName = body.Item.studentName;
     }
+
+    //Check if student already enrolled in class
+    body = await helper.checkIfMappingExists(helper.EntityTypes.class, helper.EntityTypes.student,
+        data.classID, data.studentID);
+    //Someting went wrong with the get call
+    if(body.doesMappingExist === undefined || body.doesMappingExist === null){
+        console.log(`Something went wrong: ${body}`);
+        statusCode = 400;
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    //Mapping DNE 
+    else if(body.doesMappingExist === false){
+        console.log(`${inputStudentName} is not enrolled in ${inputClassName}`);
+        body.message = `${inputStudentName} is not enrolled in ${inputClassName}`;
+        statusCode = 400;
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
     //#endregion
 
     //#region  Actually removing student from class
@@ -190,6 +240,31 @@ exports.assignTeacherToClass = async (event, context) => {
     }
     else {
         inputTeacherName = body.Item.teacherName;
+    }
+
+    //Check if teacher already assigned to class
+    body = await helper.checkIfMappingExists(helper.EntityTypes.teacher, helper.EntityTypes.class,
+        data.teacherID, data.classID);
+    //Someting went wrong with the get call
+    if(body.doesMappingExist === undefined || body.doesMappingExist === null){
+        console.log(`Something went wrong ${body}`);
+        statusCode = 400;
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    //Mapping already exists
+    else if(body.doesMappingExist === true){
+        console.log(`${inputTeacherName} is already assigned to ${inputClassName}`);
+        body.message = `${inputTeacherName} is already assigned to ${inputClassName}`;
+        statusCode = 400;
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
     }
     //#endregion
 
@@ -265,6 +340,31 @@ exports.removeTeacherFromClass = async (event, context) => {
     }
     else {
         inputTeacherName = body.Item.teacherName;
+    }
+
+    //Check if teacher already assigned to class
+    body = await helper.checkIfMappingExists(helper.EntityTypes.teacher, helper.EntityTypes.class,
+        data.teacherID, data.classID);
+    //Someting went wrong with the get call
+    if(body.doesMappingExist === undefined || body.doesMappingExist === null){
+        console.log(`Something went wrong: ${body}`);
+        statusCode = 400;
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
+    }
+    //Mapping DNE 
+    else if(body.doesMappingExist === false){
+        console.log(`${inputTeacherName} is not assigned to ${inputClassName}`);
+        body.message = `${inputTeacherName} is not assigned to ${inputClassName}`;
+        statusCode = 400;
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers
+        };
     }
     //#endregion
 
